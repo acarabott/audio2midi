@@ -49,10 +49,13 @@ Amp2MIDI {
         percRelease    = 0.01;
         percLag        = 0.1;
         
+        {
+            this.initSynthDefs;
+            s.sync;
+            this.initSynth;            
+        }.fork;
         this.initMIDI;
         this.initResponder;
-        this.initSynthDefs;
-        this.initSynth;
         this.voicePreset;
     }
     
@@ -121,9 +124,13 @@ Amp2MIDI {
         synth.set(\attack, percAttack, \release, percRelease, \lag, percLag);
     }
     
-    clear {
+    stop {
         synth.free;
         responder.remove;
     }
     
+    start {
+        this.initResponder;
+        this.initSynth;
+    }
 }
