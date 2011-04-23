@@ -134,3 +134,8 @@ Amp2MIDI {
         this.initSynth;
     }
 }
+
+/*
+    TODO Lock button
+    
+*/
