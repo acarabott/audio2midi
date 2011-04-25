@@ -3,7 +3,7 @@ Amp2MIDI {
     var s;
     var midiOut;
     var responder;
-    var synth;
+    var <synth;
     
     var <>display;
     var <>audioMin;
@@ -66,18 +66,19 @@ Amp2MIDI {
     }
     
     initSynthDefs {
-        SynthDef(\AmpListener) { |out=0, in=0, attack=0.01, release=0.01, mul=1.0, add=0, rate=24, lag=0.05|
+        SynthDef(\AmpListener) { |out=0, in=0, attack=0.01, release=0.01, mul=1.0, add=0, rate=24, lag=0.05, meter=24, amplag=1|
             var sig = SoundIn.ar(in);
             var amp = Amplitude.kr(sig, attack, release, mul, add);
-
-            var imp = Impulse.kr(rate);
-
-            SendTrig.kr(imp, 0, Lag.kr(amp, lag));
-
+            var sigImp = Impulse.kr(rate);
+            var meterImp = Impulse.kr(meter);
+            
+            SendTrig.kr(sigImp, 0, Lag.kr(amp, lag));
+            
+            SendReply.kr(meterImp, \a2m_levels, [Decay.kr(amp, amplag), K2A.ar(Peak.ar(sig, Delay1.kr(meterImp).lag(0, 3)))]);
         }.load(s);
         
     }
-    
+
     initResponder {
         responderDefault = {|t, r, msg| 
             var amp = msg[3];

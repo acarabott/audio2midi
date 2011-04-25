@@ -77,5 +77,19 @@ w.addFlowLayout;
 ~audioLabel = SCStaticText(~audioComp, 80@20)
     .string_("Input Range")
     .align_(\center);
-)
-// ~audio = EZRanger(w, 80@400, " Audio Input Range ", ControlSpec(0, 1.0, \lin, 0.01, "amp"), {|v| v.postln}, [a.audioMin, a.audioMax], layout:\vert);
+
+~audioResponder = OSCresponderNode(s.addr, \a2m_levels, {|t, r, msg| 
+    {
+        ~meter.value_(msg[3]);
+        ~meter.peakLevel_(msg[4]);
+    }.defer;
+}).add;
+
+w.onClose_({
+    ~audioResponder.remove;
+})
+);
+
+/*
+    TODO Decay on meter seems a bit funny. Seems to increase displayed volume and keeps meter red.
+*/
