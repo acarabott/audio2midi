@@ -80,8 +80,8 @@ w.addFlowLayout;
 
 ~audioResponder = OSCresponderNode(s.addr, \a2m_levels, {|t, r, msg| 
     {
-        ~meter.value_(msg[3]);
-        ~meter.peakLevel_(msg[4]);
+	    ~meter.value = msg[3].ampdb.linlin(-40, 0, 0, 1);
+    	~meter.peakLevel = msg[4].ampdb.linlin(-40, 0, 0, 1);
     }.defer;
 }).add;
 
@@ -93,3 +93,10 @@ w.onClose_({
 /*
     TODO Decay on meter seems a bit funny. Seems to increase displayed volume and keeps meter red.
 */
+~audioResponder.action_({|t, r, msg| 
+    {
+	    ~meter.value = msg[3].ampdb.linlin(-40, 0, 0, 1);
+    	~meter.peakLevel = msg[4].ampdb.linlin(-40, 0, 0, 1);
+    }.defer;
+    
+})
