@@ -1,7 +1,10 @@
 s.waitForBoot {
     a = Amp2MIDI.new
 };
-
+a.voicePreset
+a.start
+a.midiCtlNum = 7
+a.percPreset
 (
 w = Window("Amplitude To MIDI", Rect(0,0,900,600)).front;
 w.addFlowLayout;
@@ -16,12 +19,19 @@ w.addFlowLayout;
 
 ~displayButton = Button(w, 120@22)
         .states_([
-            ["Enable Metering", Color.black, Color.white],
-            ["Disable Metering", Color.white, Color.black]
-        ])
+            ["Disable Metering", Color.white, Color.black],
+            ["Enable Metering", Color.black, Color.white]
+        ]) 
         .action_({|butt|
             // a.display = false;
+			butt.value.postln;
             butt.states[butt.value].postln;
+			if(butt.value == 0) {
+				~audioResponder.action = ~meteringFunc;
+			} {
+				~audioResponder.action = {};
+				~meter.value = 0;
+			};
         });
 
 ~meterComp = CompositeView(w, 80@460);
@@ -47,14 +57,17 @@ w.addFlowLayout;
     .hi_(a.audioMax)
     .lo_(a.audioMin)
     .step_(0.01)
-    .action_({|slider|
-        var hi = slider.hi;
-        var lo = slider.lo;
-        
-        ~audioMin.value_(lo);
-        ~audioMax.value_(hi);
+	.action_({|slider|
+		var hi = slider.hi.linlin(0, 1, -40, 0).dbamp;
+		var lo = slider.lo.linlin(0, 1, -40, 0).dbamp;
+		
+        ~audioMax.value_(slider.hi);
+        ~audioMin.value_(slider.lo);
+
+        a.audioMax_(hi);
         a.audioMin_(lo);
-        a.audioMax_(hi)
+		
+		
     });
 
 ~audioMin = NumberBox(~audioComp, 80@20)
@@ -65,12 +78,12 @@ w.addFlowLayout;
     .scroll_(false);
 
 ~audioMin.action_({|box| 
-    a.audioMin_(box.value);
+    a.audioMin_(box.value.linlin(0, 1, -40, 0).dbamp);
     ~audioRange.lo_(box.value);
 });
 
 ~audioMax.action_({|box| 
-    a.audioMax_(box.value);
+    a.audioMax_(box.value.linlin(0, 1, -40, 0).dbamp);
     ~audioRange.hi_(box.value);
 });
 
@@ -78,13 +91,19 @@ w.addFlowLayout;
     .string_("Input Range")
     .align_(\center);
 
-~audioResponder = OSCresponderNode(s.addr, \a2m_levels, {|t, r, msg| 
-    {
-	    ~meter.value = msg[3].ampdb.linlin(-40, 0, 0, 1);
-    	~meter.peakLevel = msg[4].ampdb.linlin(-40, 0, 0, 1);
-    }.defer;
-}).add;
+~midiLevel = StaticText(w, 80@20)
+	.string_("120");
+	
+~meteringFunc = {|t, r, msg|
+	{
+		~meter.value = msg[3].ampdb.linlin(-40, 0, 0, 1);
+		~meter.peakLevel = msg[4].ampdb.linlin(-40, 0, 0, 1);
+		~midiLevel.string_(msg[3].linlin(a.audioMin, a.audioMax, a.midiMin, a.midiMax).asInteger.asString);
+	}.defer;
+};
 
+~audioResponder = OSCresponderNode(s.addr, \a2m_levels, ~meteringFunc).add;
+~audioResponder.action = ~meteringFunc;
 w.onClose_({
     ~audioResponder.remove;
 })
@@ -93,10 +112,3 @@ w.onClose_({
 /*
     TODO Decay on meter seems a bit funny. Seems to increase displayed volume and keeps meter red.
 */
-~audioResponder.action_({|t, r, msg| 
-    {
-	    ~meter.value = msg[3].ampdb.linlin(-40, 0, 0, 1);
-    	~meter.peakLevel = msg[4].ampdb.linlin(-40, 0, 0, 1);
-    }.defer;
-    
-})
