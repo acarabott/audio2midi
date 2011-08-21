@@ -8,7 +8,8 @@ Amp2MIDI {
     var <>display;
     var <>audioMin;
     var <>audioMax;
-
+    
+    var midiDevice;
     var <>midiMin;
     var <>midiMax;
     var <>midiChan;
@@ -35,9 +36,10 @@ Amp2MIDI {
         s = Server.default;
         
         audioMin       = 0;
-        audioMax       = 0.5;
+        audioMax       = 0.1;
         midiMin        = 0;
         midiMax        = 127;
+		midiDevice     = 0;
         midiChan       = 0;
         midiCtlNum     = 7;
         display        = false;
@@ -61,7 +63,7 @@ Amp2MIDI {
     
     initMIDI {
         MIDIClient.init;
-        midiOut = MIDIOut(0);
+        midiOut = MIDIOut(midiDevice);
         midiOut.latency = 0;
     }
     
@@ -73,7 +75,7 @@ Amp2MIDI {
             var sigImp = Impulse.kr(rate);
             var meterImp = Impulse.kr(meter);
             
-            SendTrig.kr(sigImp, 0, lagged);
+            SendReply.kr(sigImp, \a2m_midi, lagged);
             
             SendReply.kr(meterImp, \a2m_levels, [ amp, K2A.ar(Peak.ar(sig, Delay1.ar(meterImp))).lag(0, 3)]
 			);
@@ -84,17 +86,26 @@ Amp2MIDI {
         responderDefault = {|t, r, msg| 
             var amp = msg[3];
             var val = amp.linlin(audioMin, audioMax, midiMin, midiMax).asInteger;
-            midiOut.control(0, midiCtlNum, val);
+            midiOut.control(midiChan, midiCtlNum, val);
             if(display) {
                 amp.postln;
             };
         };
         
-        responder = OSCresponderNode(s.addr, '/tr', responderDefault).add;
+        responder = OSCresponderNode(s.addr, \a2m_midi, responderDefault).add;
     }
     
     initSynth {
         synth = Synth(\AmpListener, [\attack, attack, \release, release, \lag, lag, \rate, 60]);
+    }
+    
+    midiDevice {
+        ^MIDIClient.destinations[midiDevice];
+    }
+    
+    midiDevice_{|index|
+        midiDevice = index;
+        midiOut = MIDIOut(midiDevice);    
     }
     
     attack_{|val|
