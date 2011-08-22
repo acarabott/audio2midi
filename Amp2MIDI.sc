@@ -30,12 +30,16 @@ Amp2MIDI {
     
     var responderDefault;
     
-    *new { 
-        ^super.new.amp2midiInit;
+    *new {|standalone=true|
+        ^super.new.amp2midiInit(standalone);
     }
 
-    amp2midiInit {
-        s = Server.default;
+    amp2midiInit {|standalone|
+        if(standalone) {
+            s = Server.internal;
+        } {
+            s = Server.default
+        };
         
         audioIn        = 0;
         audioMin       = 0;
