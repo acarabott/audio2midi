@@ -6,6 +6,8 @@ Amp2MIDI {
     var <synth;
     
     var <>display;
+    
+    var <audioIn;
     var <>audioMin;
     var <>audioMax;
     
@@ -35,13 +37,16 @@ Amp2MIDI {
     amp2midiInit {
         s = Server.default;
         
+        audioIn        = 0;
         audioMin       = 0;
         audioMax       = 0.1;
+
         midiMin        = 0;
         midiMax        = 127;
 		midiDevice     = 0;
         midiChan       = 0;
         midiCtlNum     = 7;
+
         display        = false;
         
         voiceAttack    = 1;
@@ -96,7 +101,12 @@ Amp2MIDI {
     }
     
     initSynth {
-        synth = Synth(\AmpListener, [\attack, attack, \release, release, \lag, lag, \rate, 60]);
+        synth = Synth(\AmpListener, [\in, audioIn, \attack, attack, \release, release, \lag, lag, \rate, 60]);
+    }
+    
+    audioIn_{|index|
+        audioIn = index;
+        synth.set(\in, audioIn);
     }
     
     midiDevice {
