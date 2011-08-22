@@ -162,6 +162,16 @@ w.addFlowLayout;
     a.release
 );
 
+~smoothing = EZNumber(w, 
+    160@20,
+    "Smoothing: ",
+    ControlSpec(0, inf, \lin, 0.01, a.lag),
+    action: {|ez| a.lag_(ez.value)},
+    initVal: a.lag
+);
+
+
+
 ~inputChannel = EZPopUpMenu(w,
     160@22,
     "Audio Input Channel",
@@ -183,28 +193,49 @@ w.addFlowLayout;
         };
     });
 
+~presets = EZPopUpMenu(w,
+    200@22,
+    "Input Presets ",
+    [
+        \Voice -> { 
+            a.voicePreset; 
+        }, 
+        \Percussion -> { a.percPreset; }
+    ],
+    globalAction: {
+        ~attack.value_(a.attack);
+        ~release.value_(a.release);
+        ~smoothing.value_(a.lag);
+    },
+    labelWidth:80
+);
+
+
 w.onClose_({
     ~audioResponder.remove;
 })
 );
 
 
+~presetSave = {}
 /*
     1.0
-    TODO Lag/Smoothing control
-    TODO Swap Lag for LagUD?
+    TODO Preset saving
     TODO Audio device select
     TODO Audio file playback?
     TODO Clean up GUI
-    TODO Logic 'learn' routine necessary?
-    TODO Start/Stop button
     
     1.1
+    TODO Swap Lag for LagUD?
     TODO Multiple parameters
     TODO MIDI graph?
 */
 
-a.stop
+
+
+
+
+
 
 ~audioDevice = EZPopUpMenu(w, 
     Rect(10, 10, 350, 22),
