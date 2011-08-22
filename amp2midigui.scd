@@ -1,16 +1,9 @@
+
 s.waitForBoot {
-    a = Amp2MIDI.new
-};
-a.attack = 1
-a.release = 1
-a.voicePreset
-a.start
-a.midiCtlNum = 7
-a.percPreset
-a.stop
-a.midiDevice_(1)
-a.midiDevice
-a.midiOut
+    a = Amp2MIDI.new;    
+}
+a.s.sync
+
 (
 w = Window("Amplitude To MIDI", Rect(0,0,900,600)).front;
 w.addFlowLayout;
@@ -19,27 +12,10 @@ w.addFlowLayout;
     Rect(10, 10, 350, 22),
     "MIDI Output Device",
     MIDIClient.destinations.collect({|item, i| (item.device + "-" + item.name).asSymbol -> {}}),
-    globalAction: {|slider| a.midiDevice_(slider.value)},
+    globalAction: {|menu| a.midiDevice_(menu.value)},
     labelWidth:105,
     gap:10@10
 );
-
-~displayButton = Button(w, 120@22)
-        .states_([
-            ["Disable Metering", Color.white, Color.black],
-            ["Enable Metering", Color.black, Color.white]
-        ]) 
-        .action_({|butt|
-            // a.display = false;
-			butt.value.postln;
-            butt.states[butt.value].postln;
-			if(butt.value == 0) {
-				~audioResponder.action = ~meteringFunc;
-			} {
-				~audioResponder.action = {};
-				~meter.value = 0;
-			};
-        });
 
 ~meterComp = CompositeView(w, 80@460);
 ~meterComp.addFlowLayout;
@@ -111,9 +87,9 @@ w.addFlowLayout;
     }.defer;
 };
 
-~audioResponder = OSCresponderNode(s.addr, \a2m_levels, ~meteringFunc).add;
+~audioResponder = OSCresponderNode(nil, \a2m_levels, ~meteringFunc).add;
 ~audioResponder.action = ~meteringFunc;
-~audioMidiResponder = OSCresponderNode(s.addr, \a2m_midi, ~meteringFunc).add;
+~audioMidiResponder = OSCresponderNode(nil, \a2m_midi, {}).add;
 ~audioMidiResponder.action_({|t, r, msg| 
     var midiVal = msg[3].linlin(a.audioMin, a.audioMax, a.midiMin, a.midiMax).asInteger;
     {
@@ -186,32 +162,113 @@ w.addFlowLayout;
     a.release
 );
 
+~inputChannel = EZPopUpMenu(w,
+    160@22,
+    "Audio Input Channel",
+    (1..8).collect({ |item, i| item.asSymbol -> {}}),
+    globalAction:{|menu| a.audioIn = menu.value;},
+    labelWidth:120
+);
+
+~startStop = Button(w, 60@60)
+    .states_([
+        ["Off", Color.white, Color.black],
+        ["On", Color.black, Color.green]
+    ])
+    .action_({|butt|
+        if(butt.value == 1) {
+            a.start;
+        } {
+            a.stop;
+        };
+    });
+
 w.onClose_({
     ~audioResponder.remove;
 })
 );
 
+
 /*
     1.0
-    TODO Swap Lag for LagUD
-    TODO Audio input select
+    TODO Lag/Smoothing control
+    TODO Swap Lag for LagUD?
+    TODO Audio device select
     TODO Audio file playback?
     TODO Clean up GUI
     TODO Logic 'learn' routine necessary?
+    TODO Start/Stop button
     
     1.1
     TODO Multiple parameters
     TODO MIDI graph?
 */
 
+a.stop
 
-~release.labelWidth
+~audioDevice = EZPopUpMenu(w, 
+    Rect(10, 10, 350, 22),
+    "Audio Input Device",
+    ServerOptions.inDevices.collect({|item, i| 
+        var device = ServerOptions.inDevices[i];
+        
+        if(i == 0 || (i==1)) {
+            device = nil;
+        };
+        "device: ".post; (device).postln;
+        
+        item.tr($(, $ ).tr($), $ ).asSymbol -> {
+            a.s.options.inDevice_(device);
+            ~reboot.visible_(true);
+        }
+    }),
+    labelWidth:105,
+    gap:10@10
+);
 
-a.attack = 5
-a.release = 5
-a.lag = 10
+~reboot = Button(w, 80@22)
+    .states_([
+        ["Apply", Color.white, Color.red]
+    ])
+    .action_({|butt|
+        {
+            a.s.quit;
+            // a.s.sync;
+            a.s.boot;
+        }.fork;
+        butt.visible_(false);
+    })
+    .visible_(false);
 
+a.s.options.inDevice = nil;
+a.s.boot
+a.s.quit
+a.s.options.inDevice
+s.quit
+s.options.inDevice = nil
+s.boot
+s.options.class.openHelpFile
+~reboot.states_([
+        ["Apply", Color.white, Color.red]
+    ])
+w.refresh
+~reboot.visible = true
+s.options.numInputBusChannels
 
+Server.default = Server.internal;
+s.options.inDevice_(ServerOptions.inDevices[0]);
+s.options.outDevice_(ServerOptions.outDevices[0]);
+s
+
+s.options.inDevice = nil;
+s.options.outDevice = nil;
+s.options.inDevice = ServerOptions.inDevices[0];
+
+Server.killAll
+
+s.quit
+s.boot
+ServerOptions.devices
 ~midiGraph = UserView(w, 400@200);
 
 ~midiGraph.background = Color.red
