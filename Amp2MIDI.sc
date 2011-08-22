@@ -1,6 +1,6 @@
 Amp2MIDI {
 
-    var s;
+    var <s;
     var midiOut;
     var responder;
     var <synth;
@@ -30,16 +30,12 @@ Amp2MIDI {
     
     var responderDefault;
     
-    *new {|standalone=true|
-        ^super.new.amp2midiInit(standalone);
+    *new {
+        ^super.new.amp2midiInit;
     }
 
-    amp2midiInit {|standalone|
-        if(standalone) {
-            s = Server.internal;
-        } {
-            s = Server.default
-        };
+    amp2midiInit {
+        s = Server.default;
         
         audioIn        = 0;
         audioMin       = 0;
@@ -88,7 +84,7 @@ Amp2MIDI {
             
             SendReply.kr(meterImp, \a2m_levels, [ amp, K2A.ar(Peak.ar(sig, Delay1.ar(meterImp))).lag(0, 3)]
 			);
-        }.load(s);    
+        }.add;    
     }
 
     initResponder {
