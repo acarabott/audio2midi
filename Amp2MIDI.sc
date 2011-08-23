@@ -59,10 +59,10 @@ Amp2MIDI {
         {
             this.initSynthDefs;
             s.sync;
-            this.initSynth;            
+            // this.initSynth;            
         }.fork;
         this.initMIDI;
-        this.initResponder;
+        // this.initResponder;
         this.voicePreset;
     }
     

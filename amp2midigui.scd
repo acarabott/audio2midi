@@ -1,33 +1,30 @@
-
 s.waitForBoot {
     a = Amp2MIDI.new;    
-}
-a.s.sync
+};
 
 (
 w = Window("Amplitude To MIDI", Rect(0,0,900,600)).front;
 w.addFlowLayout;
-
-~menu = EZPopUpMenu(w, 
-    Rect(10, 10, 350, 22),
-    "MIDI Output Device",
-    MIDIClient.destinations.collect({|item, i| (item.device + "-" + item.name).asSymbol -> {}}),
-    globalAction: {|menu| a.midiDevice_(menu.value)},
-    labelWidth:105,
-    gap:10@10
-);
-
-~meterComp = CompositeView(w, 80@460);
+~titleFont = Font(Font.defaultSansFace, 20);
+~meterMasterComp = CompositeView(w, 440@590);
+~meterMasterComp.addFlowLayout;
+// ~meterMasterComp.background = Color.red;
+~meterMasterComp.decorator.left = 28;
+~meterComp = CompositeView(~meterMasterComp, 80@460);
 ~meterComp.addFlowLayout;
-~meterSpacer = StaticText(~meterComp, 80@20);
-~meter = SCLevelIndicator(~meterComp, 80@400)
+~meterComp.decorator.top = 28;
+~meter = LevelIndicator(~meterComp, 80@400)
     .warning_(0.7)
     .critical_(0.95)
     .numTicks_(11)
     .numMajorTicks_(3)
     .drawsPeak_(true);
+~meterComp.decorator.top = 56;
+~audioLabel = SCStaticText(~meterComp, 80@20)
+    .string_("Audio Input")
+    .align_(\center);
 
-~audioComp = CompositeView(w, 80@460);
+~audioComp = CompositeView(~meterMasterComp, 80@460);
 ~audioComp.addFlowLayout;
 ~audioMax = NumberBox(~audioComp, 80@20)
     .value_(a.audioMax.ampdb.linlin(-40, 0, 0, 1))
@@ -35,7 +32,6 @@ w.addFlowLayout;
     .clipLo_(0)
     .clipHi_(1.0)
     .scroll_(false);
-    
 ~audioRange = SCRangeSlider(~audioComp, 80@400)
     .hi_(a.audioMax.ampdb.linlin(-40, 0, 0, 1))
     .lo_(a.audioMin.ampdb.linlin(-40, 0, 0, 1))
@@ -45,40 +41,106 @@ w.addFlowLayout;
 		var lo = slider.lo.linlin(0, 1, -40, 0).dbamp;
         ~audioMax.value_(slider.hi);
         ~audioMin.value_(slider.lo);
-
         a.audioMax_(hi);
-        a.audioMin_(lo);
-		
-		
+        a.audioMin_(lo);		
     });
-
 ~audioMin = NumberBox(~audioComp, 80@20)
     .value_(a.audioMin.ampdb.linlin(-40, 0, 0, 1))
     .step_(0.01)
     .clipLo_(0)
     .clipHi_(1.0)
     .scroll_(false);
-
 ~audioMin.action_({|box| 
     a.audioMin_(box.value.linlin(0, 1, -40, 0).dbamp);
     ~audioRange.lo_(box.value);
 });
-
 ~audioMax.action_({|box| 
     a.audioMax_(box.value.linlin(0, 1, -40, 0).dbamp);
     ~audioRange.hi_(box.value);
 });
 
-
 ~audioLabel = SCStaticText(~audioComp, 80@20)
-    .string_("Input Range")
+    .string_("Audio Range")
     .align_(\center);
 
-~midiLevel = StaticText(w, 80@20)
-	.string_("120");
+~meterMasterComp.decorator.left = 236;
+~midiComp = CompositeView(~meterMasterComp, 80@460);
+~midiComp.addFlowLayout;
+~midiComp.decorator.top = 28;
+// ~midiSpacer = StaticText(~midiComp, 80@20);
+~midiMeter = LevelIndicator(~midiComp, 80@400)
+    .warning_(0.7)
+    .critical_(0.95)
+    .numTicks_(11)
+    .numMajorTicks_(3)
+    .drawsPeak_(true);
 
-// ~graphIndex = 0;
-// ~graphData = Array.newClear(~midiGraph.bounds.width);
+~midiComp.decorator.top = 56;
+~midiInputMeter = SCStaticText(~midiComp, 80@20)
+    .string_("MIDI Output")
+    .align_(\center);
+
+~midiSlideComp = CompositeView(~meterMasterComp, 80@460);
+~midiSlideComp.addFlowLayout;
+
+~midiMax = NumberBox(~midiSlideComp, 80@20)
+    .value_(a.midiMax)
+    .step_(1)
+    .clipLo_(0)
+    .clipHi_(127)
+    .scroll_(false);
+
+~midiRange = RangeSlider(~midiSlideComp, 80@400)
+    .hi_(a.midiMax.linlin(0, 127, 0, 1))
+    .lo_(a.midiMin.linlin(0, 127, 0, 1))
+    .step_(1/128)
+	.action_({|slider|
+	    var max = slider.hi.linlin(0, 1, 0, 127).asInteger;
+	    var min = slider.lo.linlin(0, 1, 0, 127).asInteger;
+        ~midiMax.value_(max);
+        ~midiMin.value_(min);
+        a.midiMax_(max);
+        a.midiMin_(min);		
+    });
+~midiMin = NumberBox(~midiSlideComp, 80@20)
+    .value_(a.midiMin)
+    .step_(1)
+    .clipLo_(0)
+    .clipHi_(127)
+    .scroll_(false);
+~midiMin.action_({|box| 
+    a.midiMin_(box.value);
+    ~midiRange.lo_(box.value.linlin(0, 127, 0, 1));
+});
+~midiMax.action_({|box| 
+    a.midiMax_(box.value);
+    box.value.linlin(0, 127, 0, 1).postln;
+    ~midiRange.hi_(box.value.linlin(0, 127, 0, 1));
+});
+~midiMeterLabel = SCStaticText(~midiSlideComp, 80@20)
+    .string_("MIDI Range")
+    .align_(\center);
+
+~meterMasterComp.decorator.top = 25;
+~startStop = Button(~meterMasterComp, 430@100)
+    .states_([
+        ["OFF", Color.white, Color.black],
+        ["ON", Color.black, Color.green]
+    ])
+    .action_({|butt|
+        if(butt.value == 1) {
+            a.start;
+        } {
+            a.stop;
+            {
+                ~meter.value = 0;
+                ~midiMeter.value = 0;
+            }.defer;
+        };
+    })
+    .font_(~titleFont);
+    
+
 
 ~meteringFunc = {|t, r, msg|    
 	{
@@ -91,36 +153,224 @@ w.addFlowLayout;
 ~audioResponder.action = ~meteringFunc;
 ~audioMidiResponder = OSCresponderNode(nil, \a2m_midi, {}).add;
 ~audioMidiResponder.action_({|t, r, msg| 
-    var midiVal = msg[3].linlin(a.audioMin, a.audioMax, a.midiMin, a.midiMax).asInteger;
-    {
-        ~midiLevel.string_(midiVal.asString);        
+    {   
+        ~midiMeter.value = msg[3].ampdb.linlin(((-40).dbamp*a.audioMax).ampdb, ((0).dbamp*a.audioMax).ampdb, a.midiMin/128, (a.midiMax+1)/128);
     }.defer;
+});
+)
+(
+~controlsComp = CompositeView(w, 440@590);
+~controlsComp.addFlowLayout;
+// ~controlsComp.background_(Color.red);
+~audioLabel = StaticText(~controlsComp, 430@30)
+    .background_(Color.black)
+    .stringColor_(Color.white)
+    .string_("Audio Controls")
+    .align_(\centered)
+    .font_(Font(Font.defaultSansFace, 20));
 
+~controlsComp.decorator.nextLine;
+~controlsComp.decorator.nextLine;
+
+~inputChannel = EZPopUpMenu(~controlsComp,
+    160@22,
+    "Audio Input Channel",
+    (1..8).collect({ |item, i| item.asSymbol -> {}}),
+    globalAction:{|menu| a.audioIn = menu.value;},
+    labelWidth:112,
+    gap:10@10
+);
+
+~controlsComp.decorator.nextLine;
+~controlsComp.decorator.nextLine;
+~attack = EZNumber(~controlsComp, 
+    73@20,
+    "Attack",
+    ControlSpec(0, inf, \lin, 0.01, a.attack),
+    action: {|ez| a.attack_(ez.value)},
+    initVal: a.attack,
+    numberWidth:40,
+    gap:10@10
+);
+
+~controlsComp.decorator.left = (~controlsComp.bounds.width/3);
+~release = EZNumber(~controlsComp, 
+    100@20,
+    "Release",
+    ControlSpec(0, inf, \lin, 0.01, a.release),
+    {|ez| a.release_(ez.value)},
+    a.release,
+    numberWidth:40,
+    gap:10@10
+);
+
+~controlsComp.decorator.left = (~controlsComp.bounds.width*(2/3));
+~smoothing = EZNumber(~controlsComp, 
+    100@20,
+    "Smoothing",
+    ControlSpec(0, inf, \lin, 0.01, a.lag),
+    action: {|ez| a.lag_(ez.value)},
+    initVal: a.lag,
+    numberWidth:40,
+    gap:10@10
+);
+
+~controlsComp.decorator.nextLine;
+~controlsComp.decorator.nextLine;
+~path = "presets";
+
+~basicData = [ \Voice -> { a.voicePreset; }, \Percussion -> { a.percPreset; } ];
+
+~updatePresets = {
+    if(File.exists(~path)) {
+        ~file = File.open(~path, "r");
+        ~fileString = ~file.readAllString;
+        ~presetData = ("[" ++ ~fileString ++ "]").interpret;
+        ~file.close;
+        ~userData = ~presetData.collect({ |item, i| 
+            item.key -> {
+                ~attack.valueAction = item.value[0];
+                ~release.valueAction = item.value[1];
+                ~smoothing.valueAction = item.value[2];        
+            }
+        });
+        ~data = ~basicData ++ ~userData;
+    } {
+        ~data = ~basicData;
+    };
+    
+    ~presets.items = ~data;
+};
+
+~presets = EZPopUpMenu(~controlsComp,
+    430@22,
+    "Input Presets",
+    ~data,
+    globalAction: {
+        ~attack.value_(a.attack);
+        ~release.value_(a.release);
+        ~smoothing.value_(a.lag);
+    },
+    labelWidth:72,
+    gap:50@10
+);
+~controlsComp.decorator.nextLine;
+~controlsComp.decorator.nextLine;
+
+~updatePresets.();
+~presetLabel = StaticText(~controlsComp, 120@22)
+    .string_("Save as");
+~presetTitle = TextField(~controlsComp, 305@22);
+~controlsComp.decorator.nextLine;
+~controlsComp.decorator.nextLine;
+
+~presetSave = Button(~controlsComp, 120@22)
+    .states_([
+        ["Save preset", Color.black, Color.white]
+    ])
+    .action_({|butt|
+        if(File.exists(~path)) {
+            ~file = File.open(~path, "a+");
+        } {
+            ~file = File.new(~path, "a+");
+        };
+        ~file.write("\\"++~presetTitle.string++" ->" ++ [a.attack, a.release, a.lag].asString ++ ", ");
+        ~file.close;
+        
+        ~updatePresets.();
+    });
+~controlsComp.decorator.left = (~controlsComp.bounds.width/3);
+~deletePreset = Button(~controlsComp, 120@22)
+    .states_([
+        ["Delete preset", Color.black, Color.yellow],
+    ]);
+~controlsComp.decorator.left = ~controlsComp.bounds.width*(2/3);
+~confirm = Button(~controlsComp, 60@22)
+    .states_([
+        ["OK", Color.white, Color.red]
+    ])
+    .visible_(false);
+~controlsComp.decorator.left = 374;
+~cancel = Button(~controlsComp, 60@22)
+    .states_([
+        ["Cancel", Color.black, Color.gray]
+    ])
+    .visible_(false);
+~deletePreset.action_({|butt|
+    if(~presets.value >= ~basicData.size) {
+        ~confirm.visible = true;
+        ~cancel.visible = true;    
+    }
 });
 
-~midiChannel = EZNumber(w, 
-    110@22, 
+~confirm.action_({|butt|
+    var dataAsString;
+    ~userData.remove(~presets.items[~presets.value]);
+    dataAsString = ~userData.asString;
+    ~file = File.open(~path, "w+");
+    ~file.write(dataAsString[1..dataAsString.size-2]);
+    ~file.close;
+    ~updatePresets.();
+    ~confirm.visible = false;
+    ~cancel.visible = false;
+});
+
+~cancel.action_({|butt|
+    ~deletePreset.visible = true;
+    ~confirm.visible = false;
+    ~cancel.visible = false;
+});
+
+~controlsComp.decorator.nextLine;
+~controlsComp.decorator.nextLine;
+~controlsComp.decorator.nextLine;
+~controlsComp.decorator.nextLine;
+
+~midiLabel = StaticText(~controlsComp, 430@30)
+    .background_(Color.black)
+    .stringColor_(Color.white)
+    .string_("MIDI Controls")
+    .align_(\centered)
+    .font_(~titleFont);
+
+~controlsComp.decorator.nextLine;
+~controlsComp.decorator.nextLine;
+
+~menu = EZPopUpMenu(~controlsComp, 
+    430@22,
+    "MIDI Output Device",
+    MIDIClient.destinations.collect({|item, i| (item.device + "-" + item.name).asSymbol -> {}}),
+    globalAction: {|menu| a.midiDevice_(menu.value)},
+    labelWidth:105,
+    gap:25@10
+);
+~controlsComp.decorator.nextLine;
+~midiChannel = EZNumber(~controlsComp, 
+    108@22, 
     "MIDI Channel",
     ControlSpec(1, 16, \lin, 1, 0, "Chan"),
-    { |ez| a.midiChan = ez.value - 1 },
-    0,
-    false,
-    80,
-    30
+    action: { |ez| a.midiChan = ez.value - 1 },
+    initVal: 0,
+    initAction: false,
+    numberWidth: 33,
+    gap:10@10
 );
-
-~midiControlNum = EZNumber(w, 
-    140@22, 
+~controlsComp.decorator.left = (~controlsComp.bounds.width/2);
+~midiControlNum = EZNumber(~controlsComp, 
+    136@22, 
     "MIDI Control Value",
     ControlSpec(0, 127, step:1),
-    { |ez| a.midiCtlNum = ez.value },
-    7,
-    false,
-    110,
-    30
+    action: { |ez| a.midiCtlNum = ez.value },
+    initVal: a.midiCtlNum,
+    initAction: false,
+    numberWidth:33,
+    gap:10@10
 );
-~commonControls = EZPopUpMenu(w, 
-    450@22,
+
+~controlsComp.decorator.nextLine;
+
+~commonControls = EZPopUpMenu(~controlsComp, 
+    430@22,
     "Useful Control Values",
     [
         '3 - Freely Assignable'                             -> {var val = 3;    ~midiControlNum.valueAction_(val); },
@@ -142,99 +392,38 @@ w.addFlowLayout;
         '20 - Undefined 4'                                   -> {var val = 20;	~midiControlNum.valueAction_(val); }
     ],
     initVal: 1,
-    labelWidth:120,
+    labelWidth:119,
     gap:10@10
 );
 
-~attack = EZNumber(w, 
-    160@20,
-    "Attack: ",
-    ControlSpec(0, inf, \lin, 0.01, a.attack),
-    action: {|ez| a.attack_(ez.value)},
-    initVal: a.attack
-);
-
-~release = EZNumber(w, 
-    100@20,
-    "Release: ",
-    ControlSpec(0, inf, \lin, 0.01, a.release),
-    {|ez| a.release_(ez.value)},
-    a.release
-);
-
-~smoothing = EZNumber(w, 
-    160@20,
-    "Smoothing: ",
-    ControlSpec(0, inf, \lin, 0.01, a.lag),
-    action: {|ez| a.lag_(ez.value)},
-    initVal: a.lag
-);
-
-
-
-~inputChannel = EZPopUpMenu(w,
-    160@22,
-    "Audio Input Channel",
-    (1..8).collect({ |item, i| item.asSymbol -> {}}),
-    globalAction:{|menu| a.audioIn = menu.value;},
-    labelWidth:120
-);
-
-~startStop = Button(w, 60@60)
-    .states_([
-        ["Off", Color.white, Color.black],
-        ["On", Color.black, Color.green]
-    ])
-    .action_({|butt|
-        if(butt.value == 1) {
-            a.start;
-        } {
-            a.stop;
-        };
-    });
-
-~presets = EZPopUpMenu(w,
-    200@22,
-    "Input Presets ",
-    [
-        \Voice -> { 
-            a.voicePreset; 
-        }, 
-        \Percussion -> { a.percPreset; }
-    ],
-    globalAction: {
-        ~attack.value_(a.attack);
-        ~release.value_(a.release);
-        ~smoothing.value_(a.lag);
-    },
-    labelWidth:80
-);
+~controlsComp.decorator.top = 100;
 
 
 w.onClose_({
     ~audioResponder.remove;
-})
+    ~audioMidiResponder.remove;
+});
 );
 
+    
 
-~presetSave = {}
+
+
 /*
     1.0
-    TODO Preset saving
-    TODO Audio device select
-    TODO Audio file playback?
+    TODO writeArchive/readArchive for saving...
     TODO Clean up GUI
-    
+    TODO spaces in presets = fuckup
+    TODO Check preset saving path on standalone
+        
     1.1
+    TODO Audio file playback?
+    TODO Audio device select
     TODO Swap Lag for LagUD?
     TODO Multiple parameters
     TODO MIDI graph?
+    TODO Different scaling methods for audio -> MIDI
 */
-
-
-
-
-
 
 
 ~audioDevice = EZPopUpMenu(w, 
@@ -246,7 +435,6 @@ w.onClose_({
         if(i == 0 || (i==1)) {
             device = nil;
         };
-        "device: ".post; (device).postln;
         
         item.tr($(, $ ).tr($), $ ).asSymbol -> {
             a.s.options.inDevice_(device);
@@ -295,23 +483,18 @@ s.options.inDevice = nil;
 s.options.outDevice = nil;
 s.options.inDevice = ServerOptions.inDevices[0];
 
-Server.killAll
-
-s.quit
-s.boot
-ServerOptions.devices
-~midiGraph = UserView(w, 400@200);
-
-~midiGraph.background = Color.red
-
-~midiGraph.drawFunc_({
-    Pen.moveTo(0@50);
-    Pen.lineTo(10@50);
-    Pen.fillStroke;
+// ~midiGraph = UserView(w, 400@200);
+// 
+// ~midiGraph.background = Color.red
+// 
+// ~midiGraph.drawFunc_({
+//     Pen.moveTo(0@50);
+//     Pen.lineTo(10@50);
+//     Pen.fillStroke;
     // Pen.fillOval(Rect(200, 200, sin(~midiGraph.frame*0.031)*200, sin(~midiGraph.frame*0.044)*200));
-})
+// })
 
-~midiGraph.animate = true;
+// ~midiGraph.animate = true;
 //         ~midiGraph.drawFunc_({
 //             var graphMaxY = ~midiGraph.bounds.height;
 //             var graphMaxX = ~midiGraph.bounds.width;
@@ -337,3 +520,6 @@ ServerOptions.devices
 //             // Pen.lineTo(50@midiVal.linlin(0, 127, 0, ~midiGraph.bounds.height));
 //             // Pen.fillStroke;
 //         });
+
+
+Tartini
