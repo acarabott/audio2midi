@@ -21,12 +21,12 @@ Amp2MIDI {
     var <release;
     var <lag;
     
-    var voiceAttack;
-    var voiceRelease;
-    var voiceLag;
-    var percAttack;
-    var percRelease;
-    var percLag;
+    var <voiceAttack;
+    var <voiceRelease;
+    var <voiceLag;
+    var <percAttack;
+    var <percRelease;
+    var <percLag;
     
     var responderDefault;
     
