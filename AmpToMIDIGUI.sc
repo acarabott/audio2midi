@@ -47,12 +47,12 @@ AmpToMIDIGUI {
     var commonControls;
     var promo;
     
-    *new { |atm|
-        ^super.new.init(atm);
+    *new { |a_atm|
+        ^super.new.init(a_atm);
     }
 
-    init { |atm|
-        this.atm = atm;
+    init { |a_atm|
+        atm = a_atm;
         win = Window("Amplitude To MIDI", Rect(0,0,900,600)).front;
         win.addFlowLayout;
         titleFont = Font(Font.defaultSansFace, 20);
@@ -284,22 +284,6 @@ AmpToMIDIGUI {
         basicData.do { |item, i|
             basicDictionary.add(item);
         };
-        updatePresets = {
-            var presetData, presetArray, data;
-            if(File.exists(path)) {
-                presetData = Object.readArchive(path);
-                presetArray = Array.newClear(presetData.size);
-                presetData.keysValuesDo { |key, value, i|
-                    presetArray[i] = key -> value
-                };
-                data = basicData ++ presetArray;
-                // data = Dictionary().putAll(basicDictionary, presetData);
-            } {
-                data = basicData;
-            };
-
-            presets.items = data;
-        };
 
         presets = EZPopUpMenu(controlsComp,
             430@22,
@@ -314,7 +298,7 @@ AmpToMIDIGUI {
             labelWidth:72,
             gap:50@10
         );
-        updatePresets.();
+        this.updatePresets();
         controlsComp.decorator.nextLine;
         controlsComp.decorator.nextLine;
         presetLabel = StaticText(controlsComp, 120@22)
@@ -328,7 +312,7 @@ AmpToMIDIGUI {
                 ["Save preset", Color.black, Color.white]
             ])
             .action_({|butt|
-                var title, loadedPresets;
+                var title, loadedPresets, writeData;
                 if(File.exists(path)) {
                     loadedPresets = Object.readArchive(path);
                 };
@@ -338,7 +322,7 @@ AmpToMIDIGUI {
                 if(title.size > 0) {
                     writeData = (loadedPresets ? Dictionary()).add(title.asSymbol -> [atm.attack, atm.release, atm.smoothing]);
                     writeData.writeArchive(path);
-                    updatePresets.();            
+                    this.updatePresets();            
                 };
             });
         controlsComp.decorator.left = (controlsComp.bounds.width/3);
@@ -370,7 +354,7 @@ AmpToMIDIGUI {
             complete.removeAt(presets.item);
 
             complete.writeArchive(path);
-            updatePresets.();
+            this.updatePresets();
             confirm.visible = false;
             cancel.visible = false;
         });
@@ -463,8 +447,23 @@ AmpToMIDIGUI {
         win.onClose_({
             audioResponder.remove;
             audioMidiResponder.remove;
-        });
-        
-        
+        });        
     }
+    
+    updatePresets {
+        var presetData, presetArray, data;
+        if(File.exists(path)) {
+            presetData = Object.readArchive(path);
+            presetArray = Array.newClear(presetData.size);
+            presetData.keysValuesDo { |key, value, i|
+                presetArray[i] = key -> value
+            };
+            data = basicData ++ presetArray;
+        } {
+            data = basicData;
+        };
+
+        presets.items = data;
+    }
+    
 }
