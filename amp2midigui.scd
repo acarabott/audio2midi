@@ -1,5 +1,5 @@
 s.waitForBoot {
-    a = Amp2MIDI.new;    
+    a = AmpToMIDI.new;
 };
 
 (
@@ -426,10 +426,10 @@ w.onClose_({
 
 /*
     1.0
-    TODO Clean up GUI
     TODO Check preset saving path on standalone
         
     1.1
+    TODO Multiple channels
     TODO Audio file playback?
     TODO Audio device select
     TODO Swap Lag for LagUD?
