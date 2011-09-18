@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="1138">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 31.0px Helvetica}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 16.0px Helvetica}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 16.0px Helvetica; min-height: 19.0px}
+p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 20.0px Helvetica}
+p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 15.0px Helvetica}
+p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 15.0px Helvetica; min-height: 18.0px}
+p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; font: 17.0px Helvetica; min-height: 20.0px}
+p.p9 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+p.p10 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #0000ee}
+span.s1 {text-decoration: underline ; color: #0000ee}
+span.s2 {text-decoration: underline}
+span.s3 {color: #000000}
+span.Apple-tab-span {white-space:pre}
+</style>
+</head>
+<body>
+<p class="p1"><b>Amplitude To MIDI</b></p>
+<p class="p2">Convert the amplitude of an audio signal into MIDI Control data in real-time.</p>
+<p class="p3"><br></p>
+<p class="p4"><b>Audio Input</b></p>
+<p class="p2">The system default input device is used for input. You will need to set it before starting the program via System Preferences - Sound</p>
+<p class="p2">If you have already started the program, just set the new device, then quit and re-open.</p>
+<p class="p3"><br></p>
+<p class="p4"><b>Sending MIDI to another program (e.g. Logic, Live etc)</b></p>
+<p class="p2">To send MIDI data internally (e.g. to Logic, Live etc) you may need to enable the IAC Driver as follows:</p>
+<p class="p2"><span class="Apple-tab-span">	</span>- Open Audio MIDI Setup (/Applications/Utilities/Audio MIDI Setup)</p>
+<p class="p2"><span class="Apple-tab-span">	</span>- Open the MIDI window (Window Menu, 'Show MIDI Window')</p>
+<p class="p2"><span class="Apple-tab-span">	</span>- Double click the IAC Driver icon</p>
+<p class="p2"><span class="Apple-tab-span">	</span>- Enable the checkbox 'Device is online' (top right)</p>
+<p class="p3"><br></p>
+<p class="p2">To check that things are working properly I recommend using MIDI Monitor <a href="http://www.snoize.com/MIDIMonitor/"><span class="s1">http://www.snoize.com/MIDIMonitor/</span></a></p>
+<p class="p5"><br></p>
+<p class="p4"><b>Starting/Stopping</b></p>
+<p class="p6">Use the large black OFF button to toggle on/off</p>
+<p class="p7"><br></p>
+<p class="p4"><b>Input and Output ranges</b></p>
+<p class="p6">The audio input and MIDI output ranges can be set using the blue range sliders, or by entering values into the number boxes above and below the range sliders.</p>
+<p class="p7"><br></p>
+<p class="p6"><b>Audio Range</b></p>
+<p class="p6">The audio range slider can be useful if you have a quiet signal, but still want a large MIDI output range,<span class="Apple-converted-space"> </span></p>
+<p class="p7"><br></p>
+<p class="p4"><b>Audio Controls</b></p>
+<p class="p6"><b>Attack </b>and <b>Release</b> control how quickly the attack and decay of the audio signal are followed.</p>
+<p class="p6"><b>Smoothing</b> controls how long it takes for the MIDI output signal to change from one value to another.</p>
+<p class="p7"><br></p>
+<p class="p6">Generally, if you have a signal with very fast attack and decays (e.g. percussion) you'll want low values for all. If you have a smoother signal (e.g. vocal, string or wind instruments) higher values (e.g. 1) will give a suitably smooth MIDI signal.</p>
+<p class="p7"><br></p>
+<p class="p6"><b>Attack</b> <span class="Apple-tab-span">	</span>- 60dB convergence time for following attacks</p>
+<p class="p6"><b>Release<span class="Apple-converted-space"> </span></b> - 60dB convergence time for following decays</p>
+<p class="p6"><b>Smoothing</b> - 60dB lag time in seconds</p>
+<p class="p7"><br></p>
+<p class="p6"><b>Presets</b> are provided for Percussion and Vocal signals, you can also save your own presets. If you use the same name as an existing preset, it will be overwritten.</p>
+<p class="p5"><br></p>
+<p class="p4"><b>MIDI Controls</b></p>
+<p class="p8"><br></p>
+<p class="p6"><b>MIDI Output Device </b>selects which MIDI device to send the data to.<span class="Apple-converted-space"> </span></p>
+<p class="p6"><span class="Apple-tab-span">	</span>To send to another application select IAC Driver (you may need to enable this, see above), or to send to hardware select your MIDI interface.</p>
+<p class="p7"><br></p>
+<p class="p6"><b>MIDI Channel - </b>The MIDI channel to send on.<span class="Apple-converted-space"> </span></p>
+<p class="p6"><span class="Apple-tab-span">	</span>Can be any value from 1 - 16.<span class="Apple-converted-space"> </span></p>
+<p class="p6"><span class="Apple-tab-span">	</span>Unless you are sending MIDI control values from other programs/devices you can leave this on 1.</p>
+<p class="p7"><br></p>
+<p class="p6"><b>MIDI Control Value</b> - The control value to use.</p>
+<p class="p6"><span class="Apple-tab-span">	</span>Can be any value from 0 - 127</p>
+<p class="p6"><span class="Apple-tab-span">	</span>Many of these values have an expected function, and some programs automatically assign and protect them e.g. Logic uses 7 to control the current track's volume fader.</p>
+<p class="p6"><span class="Apple-tab-span">	</span>A popup menu of useful values is provided.</p>
+<p class="p6"><span class="Apple-tab-span">	</span>If you want to control something not on the list (e.g. FX mix), use the first item in the menu (3 - Freely Assignable) or any of the undefined channels.<span class="Apple-tab-span">	</span></p>
+<p class="p5"><br></p>
+<p class="p9">© Arthur Carabott 2011</p>
+<p class="p10"><span class="s2"><a href="http://www.arthurcarabott.com/">http://www.arthurcarabott.com</a></span></p>
+<p class="p10"><span class="s2"><a href="http://arthur@arthurcarabott.com/">arthur@arthurcarabott.com</a></span></p>
+<p class="p5"><br></p>
+<p class="p10"><span class="s3">Built with SuperCollider <a href="http://supercollider.sourceforge.net/"><span class="s2">http://supercollider.sourceforge.net/</span></a></span></p>
+</body>
+</html>
