@@ -1,3 +1,6 @@
+// AmpToMIDIGUI
+//(C) Arthur Carabott 2011
+
 AmpToMIDIGUI {
     var atm;
     var win;
@@ -5,14 +8,14 @@ AmpToMIDIGUI {
     var meterMasterComp;
     var meterComp;
     var audioComp;
-    var meter;
+    var <meter;
     var audioLabel;
     var audioMax;
     var audioRange;
     var audioMin;
     var audioLabel;
     var midiComp;
-    var midiMeter;
+    var <midiMeter;
     var midiInputMeter;
     var midiSlideComp;
     var midiMax;
@@ -47,13 +50,13 @@ AmpToMIDIGUI {
     var commonControls;
     var promo;
     
-    *new { |a_atm|
-        ^super.new.init(a_atm);
+    *new { |a_atm, a_path|
+        ^super.new.init(a_atm, a_path);
     }
 
-    init { |a_atm|
+    init { |a_atm, a_path|
         atm = a_atm;
-        win = Window("Amplitude To MIDI", Rect(0,0,900,600)).front;
+        win = Window("Amplitude To MIDI", Rect((Window.screenBounds.width-900)/2,(Window.screenBounds.height-600)/2,900,600)).front;
         win.addFlowLayout;
         titleFont = Font(Font.defaultSansFace, 20);
         meterMasterComp = CompositeView(win, 440@590);
@@ -121,7 +124,7 @@ AmpToMIDIGUI {
             .critical_(0.95)
             .numTicks_(11)
             .numMajorTicks_(3)
-            .drawsPeak_(true);
+            .drawsPeak_(false);
 
         midiComp.decorator.top = 56;
         midiInputMeter = SCStaticText(midiComp, 80@20)
@@ -182,7 +185,7 @@ AmpToMIDIGUI {
                     {
                         meter.value = 0;
                         midiMeter.value = 0;
-                    }.defer;
+                    }.defer(0.1);
                 };
             })
             .font_(titleFont);
@@ -201,7 +204,9 @@ AmpToMIDIGUI {
         audioMidiResponder.action_({|t, r, msg| 
             {   
                 midiMeter.value = msg[3].ampdb.linlin(((-40).dbamp*atm.audioMax).ampdb, ((0).dbamp*atm.audioMax).ampdb, atm.midiMin/128, (atm.midiMax+1)/128);
+                // midiMeter.peakLevel = msg[4].ampdb.linlin(((-40).dbamp*atm.audioMax).ampdb, ((0).dbamp*atm.audioMax).ampdb, atm.midiMin/128, (atm.midiMax+1)/128);
             }.defer;
+            
         });
         controlsComp = CompositeView(win, 440@590);
         controlsComp.addFlowLayout;
@@ -277,7 +282,7 @@ AmpToMIDIGUI {
         });
         controlsComp.decorator.nextLine;
         controlsComp.decorator.nextLine;
-        path = "presets";
+        path = a_path;
 
         basicData = ['Voice' -> [atm.voiceAttack, atm.voiceRelease, atm.voiceLag], 'Percussion' -> [atm.percAttack, atm.percRelease, atm.percLag]];
         basicDictionary = Dictionary();
@@ -439,9 +444,9 @@ AmpToMIDIGUI {
             gap:10@10
         );
 
-        controlsComp.decorator.top = 540;
-        promo = StaticText(controlsComp, 430@22)
-            .string_("www.arthurcarabott.com / arthur@arthurcarabott.com")
+        controlsComp.decorator.top = 500;
+        promo = StaticText(controlsComp, 430@66)
+            .string_(169.asAscii.asString +     "Arthur Carabott 2011\n www.arthurcarabott.com\n arthur@arthurcarabott.com")
             .align_(\right);
 
         win.onClose_({

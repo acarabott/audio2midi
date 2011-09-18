@@ -1,7 +1,9 @@
 s.waitForBoot {
     a = AmpToMIDI.new;
 };
-AmpToMIDIGUI.new(a)
+x = AmpToMIDIGUI.new(a, "presets")
+
+{x.meter.value_(1)}.defer(2)
 (
 w = Window("Amplitude To MIDI", Rect(0,0,900,600)).front;
 w.addFlowLayout;
@@ -71,7 +73,7 @@ w.addFlowLayout;
     .critical_(0.95)
     .numTicks_(11)
     .numMajorTicks_(3)
-    .drawsPeak_(true);
+    .drawsPeak_(false);
 
 ~midiComp.decorator.top = 56;
 ~midiInputMeter = SCStaticText(~midiComp, 80@20)
@@ -423,10 +425,10 @@ w.onClose_({
 
 
 /*
-    1.0
-    TODO Check preset saving path on standalone
         
     1.1
+    TODO peak on midi gets fucked
+    TODO Freeze/lock button
     TODO Multiple channels
     TODO Audio file playback?
     TODO Audio device select
@@ -531,5 +533,3 @@ s.options.inDevice = ServerOptions.inDevices[0];
 //             // Pen.lineTo(50@midiVal.linlin(0, 127, 0, ~midiGraph.bounds.height));
 //             // Pen.fillStroke;
 //         });
-
-

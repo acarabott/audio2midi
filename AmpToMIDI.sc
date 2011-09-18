@@ -1,3 +1,6 @@
+// AmpToMIDIGUI
+//(C) Arthur Carabott 2011
+
 AmpToMIDI {
 
     var <s;
@@ -59,10 +62,8 @@ AmpToMIDI {
         {
             this.initSynthDefs;
             s.sync;
-            // this.initSynth;            
         }.fork;
         this.initMIDI;
-        // this.initResponder;
         this.voicePreset;
     }
     
@@ -73,14 +74,14 @@ AmpToMIDI {
     }
     
     initSynthDefs {
-        SynthDef(\AmpListener) { |out=0, in=0, attack=0.01, release=0.01, mul=1.0, add=0, rate=24, lag=0.05, meter=24|
+        SynthDef(\AmpListener) { |out=0, in=0, attack=0.01, release=0.01, mul=1.0, add=0, rate=30, lag=0.05, meter=24|
             var sig = SoundIn.ar(in);
             var amp = Amplitude.kr(sig, attack, release, mul, add);
             var lagged = Lag.kr(amp, lag);
             var sigImp = Impulse.kr(rate);
             var meterImp = Impulse.kr(meter);
             
-            SendReply.kr(sigImp, \a2m_midi, lagged);
+            SendReply.kr(sigImp, \a2m_midi, [lagged, K2A.ar(Peak.kr(lagged, Delay1.ar(sigImp))).lag(0, 3)]);
             
             SendReply.kr(meterImp, \a2m_levels, [ amp, K2A.ar(Peak.ar(sig, Delay1.ar(meterImp))).lag(0, 3)]
 			);
@@ -157,8 +158,3 @@ AmpToMIDI {
         this.initSynth;
     }
 }
-
-/*
-    TODO Lock button
-    
-*/
