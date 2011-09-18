@@ -1,14 +1,13 @@
 s.waitForBoot {
     a = AmpToMIDI.new;
 };
-
+AmpToMIDIGUI.new(a)
 (
 w = Window("Amplitude To MIDI", Rect(0,0,900,600)).front;
 w.addFlowLayout;
 ~titleFont = Font(Font.defaultSansFace, 20);
 ~meterMasterComp = CompositeView(w, 440@590);
 ~meterMasterComp.addFlowLayout;
-// ~meterMasterComp.background = Color.red;
 ~meterMasterComp.decorator.left = 28;
 ~meterComp = CompositeView(~meterMasterComp, 80@460);
 ~meterComp.addFlowLayout;
@@ -67,7 +66,6 @@ w.addFlowLayout;
 ~midiComp = CompositeView(~meterMasterComp, 80@460);
 ~midiComp.addFlowLayout;
 ~midiComp.decorator.top = 28;
-// ~midiSpacer = StaticText(~midiComp, 80@20);
 ~midiMeter = LevelIndicator(~midiComp, 80@400)
     .warning_(0.7)
     .critical_(0.95)
