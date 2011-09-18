@@ -219,22 +219,20 @@ w.addFlowLayout;
 ~controlsComp.decorator.nextLine;
 ~path = "presets";
 
-~basicData = [ \Voice -> { a.voicePreset; }, \Percussion -> { a.percPreset; } ];
-
+~basicData = ['Voice' -> [a.voiceAttack, a.voiceRelease, a.voiceLag], 'Percussion' -> [a.percAttack, a.percRelease, a.percLag]];
+~basicDictionary = Dictionary();
+~basicData.do { |item, i|
+    ~basicDictionary.add(item);
+};
 ~updatePresets = {
     if(File.exists(~path)) {
-        ~file = File.open(~path, "r");
-        ~fileString = ~file.readAllString;
-        ~presetData = ("[" ++ ~fileString ++ "]").interpret;
-        ~file.close;
-        ~userData = ~presetData.collect({ |item, i| 
-            item.key -> {
-                ~attack.valueAction = item.value[0];
-                ~release.valueAction = item.value[1];
-                ~smoothing.valueAction = item.value[2];        
-            }
-        });
-        ~data = ~basicData ++ ~userData;
+        ~presetData = Object.readArchive(~path);
+        ~presetArray = Array.newClear(~presetData.size);
+        ~presetData.keysValuesDo { |key, value, i|
+            ~presetArray[i] = key -> value
+        };
+        ~data = ~basicData ++ ~presetArray;
+        // ~data = Dictionary().putAll(~basicDictionary, ~presetData);
     } {
         ~data = ~basicData;
     };
@@ -245,19 +243,20 @@ w.addFlowLayout;
 ~presets = EZPopUpMenu(~controlsComp,
     430@22,
     "Input Presets",
-    ~data,
-    globalAction: {
-        ~attack.value_(a.attack);
-        ~release.value_(a.release);
-        ~smoothing.value_(a.lag);
+    ~basicData,
+    globalAction: {|menu|
+        var data = menu.items[menu.value].value;
+        data.postln;
+        ~attack.valueAction_(data[0]);
+        ~release.valueAction_(data[1]);
+        ~smoothing.valueAction_(data[2]);
     },
     labelWidth:72,
     gap:50@10
 );
-~controlsComp.decorator.nextLine;
-~controlsComp.decorator.nextLine;
-
 ~updatePresets.();
+~controlsComp.decorator.nextLine;
+~controlsComp.decorator.nextLine;
 ~presetLabel = StaticText(~controlsComp, 120@22)
     .string_("Save as");
 ~presetTitle = TextField(~controlsComp, 305@22);
@@ -270,13 +269,10 @@ w.addFlowLayout;
     ])
     .action_({|butt|
         if(File.exists(~path)) {
-            ~file = File.open(~path, "a+");
-        } {
-            ~file = File.new(~path, "a+");
+            ~loadedPresets = Object.readArchive(~path);
         };
-        ~file.write("\\"++~presetTitle.string++" ->" ++ [a.attack, a.release, a.lag].asString ++ ", ");
-        ~file.close;
-        
+        ~writeData = (~loadedPresets ? Dictionary()).add(~presetTitle.string.asSymbol -> [a.attack, a.release, a.lag]);
+        ~writeData.writeArchive(~path);
         ~updatePresets.();
     });
 ~controlsComp.decorator.left = (~controlsComp.bounds.width/3);
@@ -302,25 +298,26 @@ w.addFlowLayout;
         ~cancel.visible = true;    
     }
 });
-
-~confirm.action_({|butt|
-    var dataAsString;
-    ~userData.remove(~presets.items[~presets.value]);
-    dataAsString = ~userData.asString;
-    ~file = File.open(~path, "w+");
-    ~file.write(dataAsString[1..dataAsString.size-2]);
-    ~file.close;
-    ~updatePresets.();
-    ~confirm.visible = false;
-    ~cancel.visible = false;
-});
-
-~cancel.action_({|butt|
-    ~deletePreset.visible = true;
-    ~confirm.visible = false;
-    ~cancel.visible = false;
-});
-
+a.lag
+// ~confirm.action_({|butt|
+//     var dataAsString;
+//     ~presetData.remove
+//     ~userData.remove(~presets.items[~presets.value]);
+//     dataAsString = ~userData.asString;
+//     ~file = File.open(~path, "w+");
+//     ~file.write(dataAsString[1..dataAsString.size-2]);
+//     ~file.close;
+//     ~updatePresets.();
+//     ~confirm.visible = false;
+//     ~cancel.visible = false;
+// });
+// 
+// ~cancel.action_({|butt|
+//     ~deletePreset.visible = true;
+//     ~confirm.visible = false;
+//     ~cancel.visible = false;
+// });
+// 
 ~controlsComp.decorator.nextLine;
 ~controlsComp.decorator.nextLine;
 ~controlsComp.decorator.nextLine;
@@ -404,8 +401,6 @@ w.onClose_({
     ~audioMidiResponder.remove;
 });
 );
-
-    
 
 
 
@@ -522,4 +517,3 @@ s.options.inDevice = ServerOptions.inDevices[0];
 //         });
 
 
-Tartini
