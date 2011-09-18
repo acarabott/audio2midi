@@ -19,7 +19,7 @@ Amp2MIDI {
     
     var <attack;
     var <release;
-    var <lag;
+    var <smoothing;
     
     var <voiceAttack;
     var <voiceRelease;
@@ -101,7 +101,7 @@ Amp2MIDI {
     }
     
     initSynth {
-        synth = Synth(\AmpListener, [\in, audioIn, \attack, attack, \release, release, \lag, lag, \rate, 60]);
+        synth = Synth(\AmpListener, [\in, audioIn, \attack, attack, \release, release, \lag, smoothing, \rate, 60]);
     }
     
     audioIn_{|index|
@@ -128,22 +128,22 @@ Amp2MIDI {
         synth.set(\release, release);
     }
     
-    lag_{|val|
-        lag = val;
-        synth.set(\lag, lag);
+    smoothing_{|val|
+        smoothing = val;
+        synth.set(\lag, smoothing);
     }
     
     voicePreset {
         attack = voiceAttack;
         release = voiceRelease;
-        lag = voiceLag;
+        smoothing = voiceLag;
         synth.set(\attack, voiceAttack, \release, voiceRelease, \lag, voiceLag);
     }
     
     percPreset {
         attack = percAttack;
         release = percRelease;
-        lag = percLag;
+        smoothing = percLag;
         synth.set(\attack, percAttack, \release, percRelease, \lag, percLag);
     }
     

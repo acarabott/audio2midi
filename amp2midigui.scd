@@ -114,7 +114,6 @@ w.addFlowLayout;
 });
 ~midiMax.action_({|box| 
     a.midiMax_(box.value);
-    box.value.linlin(0, 127, 0, 1).postln;
     ~midiRange.hi_(box.value.linlin(0, 127, 0, 1));
 });
 ~midiMeterLabel = SCStaticText(~midiSlideComp, 80@20)
@@ -157,7 +156,7 @@ w.addFlowLayout;
         ~midiMeter.value = msg[3].ampdb.linlin(((-40).dbamp*a.audioMax).ampdb, ((0).dbamp*a.audioMax).ampdb, a.midiMin/128, (a.midiMax+1)/128);
     }.defer;
 });
-)
+);
 (
 ~controlsComp = CompositeView(w, 440@590);
 ~controlsComp.addFlowLayout;
@@ -187,34 +186,50 @@ w.addFlowLayout;
     73@20,
     "Attack",
     ControlSpec(0, inf, \lin, 0.01, a.attack),
-    action: {|ez| a.attack_(ez.value)},
+    {|ez| 
+        ez.setColors(numStringColor:Color.black);
+        a.attack_(ez.value);
+    },
     initVal: a.attack,
     numberWidth:40,
     gap:10@10
 );
+~attack.numberView.keyDownAction_({
+    ~attack.setColors(numStringColor:Color.red);
+});
 
 ~controlsComp.decorator.left = (~controlsComp.bounds.width/3);
 ~release = EZNumber(~controlsComp, 
     100@20,
     "Release",
     ControlSpec(0, inf, \lin, 0.01, a.release),
-    {|ez| a.release_(ez.value)},
+    {|ez| 
+        ez.setColors(numStringColor:Color.black);
+        a.release_(ez.value);
+    },
     a.release,
     numberWidth:40,
     gap:10@10
 );
-
+~release.numberView.keyDownAction_({
+    ~release.setColors(numStringColor:Color.red);
+});
 ~controlsComp.decorator.left = (~controlsComp.bounds.width*(2/3));
 ~smoothing = EZNumber(~controlsComp, 
     100@20,
     "Smoothing",
-    ControlSpec(0, inf, \lin, 0.01, a.lag),
-    action: {|ez| a.lag_(ez.value)},
-    initVal: a.lag,
+    ControlSpec(0, inf, \lin, 0.01, a.smoothing),
+    {|ez| 
+        ez.setColors(numStringColor:Color.black);
+        a.smoothing_(ez.value);
+    },
+    initVal: a.smoothing,
     numberWidth:40,
     gap:10@10
 );
-
+~smoothing.numberView.keyDownAction_({
+    ~smoothing.setColors(numStringColor:Color.red);
+});
 ~controlsComp.decorator.nextLine;
 ~controlsComp.decorator.nextLine;
 ~path = "presets";
@@ -246,7 +261,6 @@ w.addFlowLayout;
     ~basicData,
     globalAction: {|menu|
         var data = menu.items[menu.value].value;
-        data.postln;
         ~attack.valueAction_(data[0]);
         ~release.valueAction_(data[1]);
         ~smoothing.valueAction_(data[2]);
@@ -268,12 +282,18 @@ w.addFlowLayout;
         ["Save preset", Color.black, Color.white]
     ])
     .action_({|butt|
+        var title;
         if(File.exists(~path)) {
             ~loadedPresets = Object.readArchive(~path);
         };
-        ~writeData = (~loadedPresets ? Dictionary()).add(~presetTitle.string.asSymbol -> [a.attack, a.release, a.lag]);
-        ~writeData.writeArchive(~path);
-        ~updatePresets.();
+        
+        title = ~presetTitle.string;
+        
+        if(title.size > 0) {
+            ~writeData = (~loadedPresets ? Dictionary()).add(title.asSymbol -> [a.attack, a.release, a.smoothing]);
+            ~writeData.writeArchive(~path);
+            ~updatePresets.();            
+        };
     });
 ~controlsComp.decorator.left = (~controlsComp.bounds.width/3);
 ~deletePreset = Button(~controlsComp, 120@22)
@@ -298,26 +318,24 @@ w.addFlowLayout;
         ~cancel.visible = true;    
     }
 });
-a.lag
-// ~confirm.action_({|butt|
-//     var dataAsString;
-//     ~presetData.remove
-//     ~userData.remove(~presets.items[~presets.value]);
-//     dataAsString = ~userData.asString;
-//     ~file = File.open(~path, "w+");
-//     ~file.write(dataAsString[1..dataAsString.size-2]);
-//     ~file.close;
-//     ~updatePresets.();
-//     ~confirm.visible = false;
-//     ~cancel.visible = false;
-// });
-// 
-// ~cancel.action_({|butt|
-//     ~deletePreset.visible = true;
-//     ~confirm.visible = false;
-//     ~cancel.visible = false;
-// });
-// 
+);
+(
+~confirm.action_({|butt|
+    var complete;
+    complete = Object.readArchive(~path);
+    complete.removeAt(~presets.item);
+    
+    complete.writeArchive(~path);
+    ~updatePresets.();
+    ~confirm.visible = false;
+    ~cancel.visible = false;
+});
+
+~cancel.action_({|butt|
+    ~confirm.visible = false;
+    ~cancel.visible = false;
+});
+
 ~controlsComp.decorator.nextLine;
 ~controlsComp.decorator.nextLine;
 ~controlsComp.decorator.nextLine;
