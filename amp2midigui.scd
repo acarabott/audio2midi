@@ -424,9 +424,7 @@ w.onClose_({
 
 /*
     1.0
-    TODO writeArchive/readArchive for saving...
     TODO Clean up GUI
-    TODO spaces in presets = fuckup
     TODO Check preset saving path on standalone
         
     1.1
