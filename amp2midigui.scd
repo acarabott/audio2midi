@@ -411,8 +411,10 @@ w.addFlowLayout;
     gap:10@10
 );
 
-~controlsComp.decorator.top = 100;
-
+~controlsComp.decorator.top = 540;
+~promo = StaticText(~controlsComp, 430@22)
+    .string_("www.arthurcarabott.com / arthur@arthurcarabott.com")
+    .align_(\right);
 
 w.onClose_({
     ~audioResponder.remove;
